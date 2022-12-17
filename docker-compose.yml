@@ -1,0 +1,32 @@
+version: "3.9"
+
+volumes:
+  pgdata:
+
+services:
+  web:
+    container_name: secret-santa-bot-web
+    build:
+      context: ../SecretSantaTelegramBot
+      dockerfile: build/web.dockerfile
+    env_file:
+      - build/.env
+    volumes:
+      - ./src:/app/src
+    ports:
+      - "10500:10500"
+    command: sh -c  "gunicorn main:app --bind 0.0.0.0:10500 --workers 1 --worker-class uvicorn.workers.UvicornWorker"
+    depends_on:
+      - postgres
+
+  postgres:
+    container_name: secret-santa-bot-postgres
+    image: postgres:11
+    environment:
+      - POSTGRES_USER=user_pg
+      - POSTGRES_PASSWORD=password_pg
+      - POSTGRES_DB=fast_api_template
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "6532:5432"
